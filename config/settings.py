@@ -30,7 +30,12 @@ SECRET_KEY = 'django-insecure-^kvmioj5=kfl@(9$ane3+ejb!ag740y(7rqw%4mjs=efr0n48m
 DEBUG = True
 
 # ✅ Для PythonAnywhere добавьте свой домен
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'kvartirabar.uz']
+ALLOWED_HOSTS = [
+    "kvartirabar.uz",
+    "www.kvartirabar.uz",
+    "127.0.0.1",
+    "localhost",
+]
 
 AUTH_USER_MODEL = 'users.User'
 

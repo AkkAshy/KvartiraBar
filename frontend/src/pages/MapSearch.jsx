@@ -166,7 +166,9 @@ const MapSearch = () => {
     });
 
     const placemarks = properties.map((property, index) => {
-      const genderPref = property.gender_preference || 'any';
+      // Для квартир с несколькими категориями берем первую, или 'any' если пустой массив
+      const genderPrefs = property.gender_preference || [];
+      const genderPref = genderPrefs.length > 0 ? genderPrefs[0] : 'any';
       const colorData = COLOR_SCHEME[genderPref] || COLOR_SCHEME.any;
 
       const iconSize = [35, 35];
@@ -220,11 +222,13 @@ const MapSearch = () => {
     // Применяем все фильтры
     let filtered = [...allProperties];
 
-    // Фильтр по категории (gender_preference)
+    // Фильтр по категории (gender_preference) - теперь массив
     if (newFilters.gender_preference) {
-      filtered = filtered.filter(property =>
-        (property.gender_preference || 'any') === newFilters.gender_preference
-      );
+      filtered = filtered.filter(property => {
+        const prefs = property.gender_preference || [];
+        // Показываем если массив пустой (всем) или содержит выбранную категорию
+        return prefs.length === 0 || prefs.includes(newFilters.gender_preference);
+      });
     }
 
     // Фильтр по типу котла
@@ -299,10 +303,10 @@ const MapSearch = () => {
 
       <div className="flex-1 relative">
         {/* Карта */}
-        <div 
-          ref={mapRef} 
+        <div
+          ref={mapRef}
           className="w-full h-full"
-          style={{ minHeight: '500px', backgroundColor: '#f0f0f0' }}
+          style={{ minHeight: 'calc(100vh - 64px)', backgroundColor: '#f0f0f0' }}
         />
 
         {/* Предупреждение если нет объявлений */}
@@ -330,7 +334,7 @@ const MapSearch = () => {
 
         {/* ✅ ОБНОВЛЕННАЯ ПАНЕЛЬ ФИЛЬТРОВ С КНОПКОЙ СКРЫТЬ/ПОКАЗАТЬ */}
         {properties.length > 0 && (
-          <div className="absolute top-4 left-4 bg-white rounded-xl shadow-xl z-10 max-w-xs overflow-hidden">
+          <div className="absolute top-4 left-4 bg-white rounded-xl shadow-xl z-10 max-w-xs overflow-hidden md:max-w-xs">
             {/* Заголовок с кнопкой свернуть/развернуть */}
             <div 
               className="flex items-center justify-between p-4 border-b cursor-pointer hover:bg-gray-50"
@@ -370,8 +374,11 @@ const MapSearch = () => {
                     </button>
 
                     {Object.entries(COLOR_SCHEME).map(([key, data]) => {
-                      if (key === 'any') return null;
-                      const count = allProperties.filter(p => (p.gender_preference || 'any') === key).length;
+                       if (key === 'any') return null;
+                       const count = allProperties.filter(p => {
+                         const prefs = p.gender_preference || [];
+                         return prefs.length === 0 || prefs.includes(key);
+                       }).length;
                       
                       return (
                         <button
@@ -527,7 +534,7 @@ const MapSearch = () => {
                   onClick={() => navigate(`/properties/${selectedProperty.id}`)}
                   className="w-full btn-primary"
                   style={{
-                    backgroundColor: COLOR_SCHEME[selectedProperty.gender_preference || 'any'].color
+                    backgroundColor: COLOR_SCHEME[(selectedProperty.gender_preference || [])[0] || 'any'].color
                   }}
                 >
                   Подробнее
@@ -540,7 +547,7 @@ const MapSearch = () => {
         {/* Кнопка назад */}
         <button
           onClick={() => navigate('/')}
-          className="absolute top-4 right-4 btn-outline bg-white z-10 shadow-lg"
+          className="absolute top-4 right-4 btn-outline bg-white z-10 shadow-lg hidden md:block"
         >
           ← Вернуться к списку
         </button>

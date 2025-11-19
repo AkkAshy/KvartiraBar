@@ -141,38 +141,39 @@ const Home = () => {
       <section className="relative bg-gradient-to-br from-primary-700 via-primary-800 to-gray-900 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c')] bg-cover bg-center opacity-20" />
 
-        <div className="relative z-10 container-custom py-24 text-center">
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 animate-fade-in">
+        <div className="relative z-10 container-custom py-12 md:py-20 lg:py-24 text-center px-4">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold mb-4 md:mb-6 animate-fade-in">
             Найди жильё <span className="text-yellow-400">по-человечески</span>
           </h1>
-          <p className="text-xl text-gray-200 mb-10">
+          <p className="text-base md:text-xl text-gray-200 mb-6 md:mb-10 px-4">
             Просто опиши, что тебе нужно — наш <span className="text-yellow-300 font-semibold">ИИ</span> подберёт подходящие квартиры.
           </p>
 
-          <div className="relative max-w-3xl mx-auto">
+          <div className="relative max-w-3xl mx-auto px-4">
             <input
               type="text"
               placeholder="Например: квартира с вай-фаем и стиралкой рядом с НГПИ"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAISearch()}
-              className="w-full p-5 rounded-2xl text-gray-900 text-lg shadow-lg focus:ring-4 focus:ring-yellow-400 outline-none"
+              className="w-full p-4 md:p-5 pr-12 md:pr-32 rounded-2xl text-gray-900 text-base md:text-lg shadow-lg focus:ring-4 focus:ring-yellow-400 outline-none"
             />
             <button
               onClick={handleAISearch}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition"
+              className="absolute right-6 md:right-8 top-1/2 transform -translate-y-1/2 bg-yellow-400 hover:bg-yellow-500 text-black px-4 md:px-6 py-2 md:py-3 rounded-xl font-semibold flex items-center gap-2 transition text-sm md:text-base"
             >
-              <FiSearch /> Найти
+              <FiSearch className="text-lg" />
+              <span className="hidden md:inline">Найти</span>
             </button>
           </div>
 
-          <p className="text-sm text-gray-300 mt-4 italic">
+          <p className="text-xs md:text-sm text-gray-300 mt-3 md:mt-4 italic px-4">
             Попробуй: <span className="text-yellow-300">"комната для девушки с кондиционером"</span>
           </p>
 
-          <div className="mt-8 flex justify-center items-center gap-2 text-yellow-300">
-            <FiZap className="text-lg animate-pulse" />
-            <span>ИИ-поиск активирован</span>
+          <div className="mt-6 md:mt-8 flex justify-center items-center gap-2 text-yellow-300">
+            <FiZap className="text-base md:text-lg animate-pulse" />
+            <span className="text-sm md:text-base">ИИ-поиск активирован</span>
           </div>
         </div>
       </section>
@@ -198,41 +199,41 @@ const Home = () => {
       <main className="container-custom py-12">
         {/* Быстрые фильтры */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Популярные запросы</h2>
-          <div className="flex flex-wrap gap-3">
-            <button 
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Популярные запросы</h2>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+            <button
               onClick={() => {
                 handleFilterChange('search', 'НГПИ');
                 setTimeout(handleSearch, 100);
               }}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors"
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0"
             >
               Рядом с НГПИ
             </button>
-            <button 
+            <button
               onClick={() => {
                 handleFilterChange('search', 'центр');
                 setTimeout(handleSearch, 100);
               }}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors"
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0"
             >
               Центр города
             </button>
-            <button 
+            <button
               onClick={() => {
                 handleFilterChange('gender_preference', 'female');
                 setTimeout(handleSearch, 100);
               }}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors"
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0"
             >
               Для девушек
             </button>
-            <button 
+            <button
               onClick={() => {
                 handleFilterChange('boiler_type', 'factory');
                 setTimeout(handleSearch, 100);
               }}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors"
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0"
             >
               С заводским котлом
             </button>

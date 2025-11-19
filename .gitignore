@@ -125,6 +125,10 @@ Thumbs.db
 # Media files (uploaded files)
 media/
 
+frontend/
+
+
+
 # Static files (collected static files)
 staticfiles/
 
