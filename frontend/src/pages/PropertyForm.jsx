@@ -214,10 +214,15 @@ const PropertyForm = () => {
       console.log('📸 Количество новых изображений:', images.length);
 
       const submitData = new FormData();
-      
+
       Object.keys(formData).forEach(key => {
         const value = formData[key];
-        submitData.append(key, value);
+        // Сериализуем JSONField поля
+        if (key === 'gender_preference' && Array.isArray(value)) {
+          submitData.append(key, JSON.stringify(value));
+        } else if (value !== null && value !== undefined && value !== '') {
+          submitData.append(key, value);
+        }
       });
 
       if (images.length > 0) {

@@ -107,7 +107,10 @@ export const auctionsAPI = {
   getAll: (params) => api.get('/auctions/', { params }),
   getById: (id) => api.get(`/auctions/${id}/`),
   create: (data) => api.post('/auctions/', data),
+  update: (id, data) => api.put(`/auctions/${id}/`, data),
+  delete: (id) => api.delete(`/auctions/${id}/`),
   placeBid: (id, amount) => api.post(`/auctions/${id}/bid/`, { amount }),
+  initiatePayment: (id) => api.post(`/auctions/${id}/initiate-payment/`),
 };
 
 // Mortgages API

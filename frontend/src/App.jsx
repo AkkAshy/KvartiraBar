@@ -15,6 +15,9 @@ import Favorites from './pages/Favorites';
 import ContactRequests from './pages/ContactRequests';
 import Profile from './pages/Profile';
 import MapSearch from './pages/MapSearch';
+import Auctions from './pages/Auctions';
+import AuctionDetail from './pages/AuctionDetail';
+import AuctionForm from './pages/AuctionForm';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, sellerOnly = false, buyerOnly = false }) => {
@@ -74,6 +77,10 @@ function AppRoutes() {
       <Route path="/map" element={<MapSearch />} />
       <Route path="/properties/:id" element={<PropertyDetail />} />
 
+      {/* Auction Routes */}
+      <Route path="/auctions" element={<Auctions />} />
+      <Route path="/auctions/:id" element={<AuctionDetail />} />
+
       {/* Protected Routes */}
       <Route
         path="/profile"
@@ -124,6 +131,16 @@ function AppRoutes() {
         element={
           <ProtectedRoute buyerOnly>
             <Favorites />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Auction Create Route - Seller Only */}
+      <Route
+        path="/auctions/create"
+        element={
+          <ProtectedRoute sellerOnly>
+            <AuctionForm />
           </ProtectedRoute>
         }
       />

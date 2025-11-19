@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import logo from '../logo.png';
+import logo from '../logo.svg';
 import {
   FiHome,
   FiHeart,
@@ -12,6 +12,7 @@ import {
   FiPlusCircle,
   FiList,
   FiMessageSquare,
+  FiDollarSign,
 } from 'react-icons/fi';
 
 const Header = () => {
@@ -47,6 +48,14 @@ const Header = () => {
               className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
             >
               Главная
+            </Link>
+
+            <Link
+              to="/auctions"
+              className="text-gray-700 hover:text-primary-600 font-medium transition-colors flex items-center space-x-1"
+            >
+              <FiDollarSign className="text-lg" />
+              <span>Аукционы</span>
             </Link>
 
             {isAuthenticated && (
@@ -150,6 +159,15 @@ const Header = () => {
               >
                 <img src={logo} alt="Logo" className="w-5 h-5 rounded" />
                 <span>Главная</span>
+              </Link>
+
+              <Link
+                to="/auctions"
+                onClick={toggleMobileMenu}
+                className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 font-medium transition-colors py-2"
+              >
+                <FiDollarSign />
+                <span>Аукционы</span>
               </Link>
 
               {isAuthenticated ? (

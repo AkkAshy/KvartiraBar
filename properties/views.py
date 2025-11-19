@@ -265,7 +265,7 @@ class PropertyListCreateView(generics.ListCreateAPIView):
         # Сохраняем с owner
         property_obj = serializer.save(owner=request.user)
         print(f"✅ Property создано: ID={property_obj.id}, Title={property_obj.title}")
-        print(f"💰 Тип: {property_obj.type}, Цена: {property_obj.get_price_display()}")  # 🆕
+        print(f"💰 Тип: {property_obj.type}")
         print(f"🎯 Nearby landmarks: {property_obj.nearby_landmarks}")
 
         # Сохраняем изображения

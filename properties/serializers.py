@@ -122,6 +122,10 @@ class PropertySerializer(serializers.ModelSerializer):
         - Для аренды: "2 500 000 сум/мес"
         - Для посуточной: "150 000 сум/сутки"
         """
+        # Проверяем что объект существует и имеет все необходимые атрибуты
+        if not obj or not hasattr(obj, 'type'):
+            return None
+
         if obj.type == 'sale':
             if obj.price:
                 return {
