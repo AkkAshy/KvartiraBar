@@ -19,6 +19,10 @@ AI_PROVIDER = os.getenv('AI_PROVIDER', 'openai')  # По умолчанию Open
 # API ключ для выбранного провайдера
 AI_API_KEY = os.getenv('AI_API_KEY')
 
+CLICK_SERVICE_ID = 'ваш_service_id'  # Получите от Click
+CLICK_SECRET_KEY = 'ваш_secret_key'  # Получите от Click
+
+
 
 # Яндекс.Карты API
 YANDEX_MAPS_API_KEY = '6e46a359-b254-4264-bf45-210dbbb6d13a'
