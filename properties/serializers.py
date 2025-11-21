@@ -171,6 +171,30 @@ class PropertySerializer(serializers.ModelSerializer):
 
         return None
 
+    def validate(self, data):
+        """
+        Валидация: проверяем что указана соответствующая цена для типа
+        """
+        property_type = data.get('type')
+
+        if property_type == 'sale':
+            if not data.get('price'):
+                raise serializers.ValidationError({
+                    'price': 'Для продажи необходимо указать цену'
+                })
+        elif property_type == 'rent':
+            if not data.get('price_per_month'):
+                raise serializers.ValidationError({
+                    'price_per_month': 'Для долгосрочной аренды необходимо указать цену за месяц'
+                })
+        elif property_type == 'daily_rent':
+            if not data.get('price_per_day'):
+                raise serializers.ValidationError({
+                    'price_per_day': 'Для посуточной аренды необходимо указать цену за сутки'
+                })
+
+        return data
+
 
 class ContactRequestSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов на контакт"""

@@ -63,7 +63,7 @@ class Property(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='properties', verbose_name='Владелец')
     title = models.CharField(max_length=255, verbose_name='Название')
     description = models.TextField(verbose_name='Описание')
-    price = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='Цена')
+    price = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, verbose_name='Цена')
     address = models.CharField(max_length=500, verbose_name='Адрес')
     latitude = models.FloatField(null=True, blank=True, verbose_name='Широта')
     longitude = models.FloatField(null=True, blank=True, verbose_name='Долгота')
