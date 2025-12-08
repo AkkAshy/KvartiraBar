@@ -9,9 +9,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from django.db import transaction
 from django.db.models import Q, F
+from django.shortcuts import get_object_or_404
 
-from .models import Property, PropertyImage
-from .serializers import PropertySerializer
+from .models import Property, PropertyImage, Favorite, ContactRequest
+from .serializers import PropertySerializer, FavoriteSerializer, ContactRequestSerializer
 from core.yandex_maps import geocoder_service
 
 
@@ -32,22 +33,13 @@ class PropertyListCreateView(generics.ListCreateAPIView):
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
-    # 🆕 ОБНОВЛЕННЫЕ ФИЛЬТРЫ
+    # 🆕 ОБНОВЛЕННЫЕ ФИЛЬТРЫ (gender_preference убран - это JSONField)
     filterset_fields = [
         'type', 'status', 'rooms', 'boiler_type',
         'building_type', 'repair_type', 'has_furniture', 'has_parking',
         'has_elevator', 'has_wifi', 'pets_allowed', 'has_balcony',
         'has_conditioner', 'has_washing_machine', 'has_fridge'
     ]
-
-    filter_overrides = {
-        'gender_preference': {
-            'filter_class': 'django_filters.CharFilter',
-            'extra': lambda f: {
-                'lookup_expr': 'icontains',
-            },
-        },
-    }
 
     search_fields = ['title', 'description', 'address', 'search_keywords']
 
@@ -265,7 +257,7 @@ class PropertyListCreateView(generics.ListCreateAPIView):
         # Сохраняем с owner
         property_obj = serializer.save(owner=request.user)
         print(f"✅ Property создано: ID={property_obj.id}, Title={property_obj.title}")
-        print(f"💰 Тип: {property_obj.type}")
+        print(f"💰 Тип: {property_obj.type}, Цена: {property_obj.price or property_obj.price_per_month or property_obj.price_per_day}")
         print(f"🎯 Nearby landmarks: {property_obj.nearby_landmarks}")
 
         # Сохраняем изображения
@@ -335,7 +327,7 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
         property_obj = serializer.save()
 
         print(f"✅ Property обновлено: {property_obj.title}")
-        print(f"💰 Тип: {property_obj.type}, Цена: {property_obj.get_price_display()}")  # 🆕
+        print(f"💰 Тип: {property_obj.type}, Цена: {property_obj.price or property_obj.price_per_month or property_obj.price_per_day}")
         print(f"🎯 Nearby landmarks: {property_obj.nearby_landmarks}")
 
         # Добавляем новые изображения
@@ -541,4 +533,226 @@ def search_near_landmark(request):
         'property_type': property_type if property_type else 'all',  # 🆕
         'found': len(results),
         'results': results
+    })
+
+
+# ==================== ИЗБРАННОЕ (FAVORITES) ====================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def favorites_list(request):
+    """
+    Список избранных объектов пользователя
+    GET /api/properties/favorites/
+    """
+    favorites = Favorite.objects.filter(user=request.user).select_related(
+        'property', 'property__owner'
+    ).prefetch_related('property__images')
+
+    serializer = FavoriteSerializer(favorites, many=True, context={'request': request})
+    return Response({
+        'count': favorites.count(),
+        'results': serializer.data
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_to_favorites(request, property_id):
+    """
+    Добавить объект в избранное
+    POST /api/properties/{property_id}/favorite/
+    """
+    property_obj = get_object_or_404(Property, id=property_id)
+
+    # Проверяем, не добавлен ли уже
+    favorite, created = Favorite.objects.get_or_create(
+        user=request.user,
+        property=property_obj
+    )
+
+    if created:
+        serializer = FavoriteSerializer(favorite, context={'request': request})
+        return Response({
+            'message': 'Добавлено в избранное',
+            'favorite': serializer.data
+        }, status=status.HTTP_201_CREATED)
+    else:
+        return Response({
+            'message': 'Уже в избранном',
+            'favorite_id': favorite.id
+        }, status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def remove_from_favorites(request, property_id):
+    """
+    Удалить объект из избранного
+    DELETE /api/properties/{property_id}/favorite/
+    """
+    property_obj = get_object_or_404(Property, id=property_id)
+
+    deleted_count, _ = Favorite.objects.filter(
+        user=request.user,
+        property=property_obj
+    ).delete()
+
+    if deleted_count > 0:
+        return Response({
+            'message': 'Удалено из избранного'
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({
+            'message': 'Не было в избранном'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def toggle_favorite(request, property_id):
+    """
+    Переключить статус избранного (добавить/удалить)
+    POST /api/properties/{property_id}/toggle-favorite/
+    """
+    property_obj = get_object_or_404(Property, id=property_id)
+
+    favorite = Favorite.objects.filter(
+        user=request.user,
+        property=property_obj
+    ).first()
+
+    if favorite:
+        # Удаляем из избранного
+        favorite.delete()
+        return Response({
+            'is_favorited': False,
+            'message': 'Удалено из избранного'
+        })
+    else:
+        # Добавляем в избранное
+        favorite = Favorite.objects.create(
+            user=request.user,
+            property=property_obj
+        )
+        return Response({
+            'is_favorited': True,
+            'message': 'Добавлено в избранное',
+            'favorite_id': favorite.id
+        }, status=status.HTTP_201_CREATED)
+
+
+# ==================== ЗАЯВКИ НА КОНТАКТ ====================
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_contact_request(request, property_id):
+    """
+    Создать заявку на контакт с владельцем
+    POST /api/properties/{property_id}/contact/
+    Body: {"message": "Здравствуйте, хочу посмотреть квартиру"}
+    """
+    property_obj = get_object_or_404(Property, id=property_id)
+
+    # Нельзя отправить заявку на свой объект
+    if property_obj.owner == request.user:
+        return Response({
+            'error': 'Нельзя отправить заявку на свой объект'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Проверяем, не отправлена ли уже заявка
+    existing = ContactRequest.objects.filter(
+        property=property_obj,
+        buyer=request.user
+    ).first()
+
+    if existing:
+        serializer = ContactRequestSerializer(existing, context={'request': request})
+        return Response({
+            'message': 'Заявка уже отправлена',
+            'contact_request': serializer.data
+        }, status=status.HTTP_200_OK)
+
+    # Создаем новую заявку
+    contact_request = ContactRequest.objects.create(
+        property=property_obj,
+        buyer=request.user,
+        message=request.data.get('message', '')
+    )
+
+    serializer = ContactRequestSerializer(contact_request, context={'request': request})
+    return Response({
+        'message': 'Заявка отправлена',
+        'contact_request': serializer.data
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_contact_requests(request):
+    """
+    Мои отправленные заявки на контакт
+    GET /api/properties/my-contact-requests/
+    """
+    requests_sent = ContactRequest.objects.filter(
+        buyer=request.user
+    ).select_related('property', 'property__owner')
+
+    serializer = ContactRequestSerializer(requests_sent, many=True, context={'request': request})
+    return Response({
+        'count': requests_sent.count(),
+        'results': serializer.data
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def received_contact_requests(request):
+    """
+    Полученные заявки на мои объекты
+    GET /api/properties/received-contact-requests/
+    """
+    my_properties = Property.objects.filter(owner=request.user)
+    requests_received = ContactRequest.objects.filter(
+        property__in=my_properties
+    ).select_related('property', 'buyer')
+
+    serializer = ContactRequestSerializer(requests_received, many=True, context={'request': request})
+    return Response({
+        'count': requests_received.count(),
+        'results': serializer.data
+    })
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_contact_request_status(request, request_id):
+    """
+    Обновить статус заявки (только владелец объекта)
+    PATCH /api/properties/contact-requests/{request_id}/
+    Body: {"status": "contacted"} или {"status": "completed"} или {"status": "cancelled"}
+    """
+    contact_request = get_object_or_404(ContactRequest, id=request_id)
+
+    # Проверяем, что текущий пользователь - владелец объекта
+    if contact_request.property.owner != request.user:
+        return Response({
+            'error': 'Только владелец объекта может изменить статус заявки'
+        }, status=status.HTTP_403_FORBIDDEN)
+
+    new_status = request.data.get('status')
+    valid_statuses = ['pending', 'contacted', 'completed', 'cancelled']
+
+    if new_status not in valid_statuses:
+        return Response({
+            'error': f'Неверный статус. Допустимые: {", ".join(valid_statuses)}'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    contact_request.status = new_status
+    contact_request.save()
+
+    serializer = ContactRequestSerializer(contact_request, context={'request': request})
+    return Response({
+        'message': 'Статус обновлен',
+        'contact_request': serializer.data
     })

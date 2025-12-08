@@ -191,11 +191,16 @@ const AuctionForm = () => {
                 required
               >
                 <option value="">Выберите недвижимость</option>
-                {myProperties.map((property) => (
-                  <option key={property.id} value={property.id}>
-                    {property.title} - {Number(property.price).toLocaleString('ru-RU')} сум
-                  </option>
-                ))}
+                {myProperties.map((property) => {
+                  // Выбираем цену в зависимости от типа недвижимости
+                  const displayPrice = property.price || property.price_per_month || property.price_per_day || 0;
+                  const priceLabel = property.type === 'rent' ? '/мес' : property.type === 'daily_rent' ? '/сутки' : '';
+                  return (
+                    <option key={property.id} value={property.id}>
+                      {property.title} - {Number(displayPrice).toLocaleString('ru-RU')} сум{priceLabel}
+                    </option>
+                  );
+                })}
               </select>
               <p className="text-xs text-gray-500 mt-1">
                 Выберите объект недвижимости для аукциона

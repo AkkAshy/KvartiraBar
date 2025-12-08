@@ -113,6 +113,12 @@ export const auctionsAPI = {
   delete: (id) => api.delete(`/auctions/${id}/`),
   placeBid: (id, amount) => api.post(`/auctions/${id}/bid/`, { amount }),
   initiatePayment: (id) => api.post(`/auctions/${id}/initiate-payment/`),
+  // Ручная оплата
+  getPaymentInfo: (id) => api.get(`/auctions/${id}/payment-info/`),
+  uploadScreenshot: (id, formData) => api.post(`/auctions/${id}/upload-screenshot/`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  checkPaymentStatus: (id) => api.get(`/auctions/${id}/check-payment/`),
 };
 
 // Mortgages API

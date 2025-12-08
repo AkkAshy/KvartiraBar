@@ -10,6 +10,16 @@ from .views import (
     delete_image,
     my_properties,
     search_near_landmark,
+    # Избранное
+    favorites_list,
+    add_to_favorites,
+    remove_from_favorites,
+    toggle_favorite,
+    # Заявки на контакт
+    create_contact_request,
+    my_contact_requests,
+    received_contact_requests,
+    update_contact_request_status,
 )
 from .views_ai import ai_search, ai_suggest  # 🆕 AI-поиск
 
@@ -22,6 +32,18 @@ urlpatterns = [
 
     # Мои объявления
     path('my/', my_properties, name='my-properties'),
+
+    # Избранное
+    path('favorites/', favorites_list, name='favorites-list'),
+    path('<int:property_id>/favorite/', add_to_favorites, name='add-to-favorites'),
+    path('<int:property_id>/unfavorite/', remove_from_favorites, name='remove-from-favorites'),
+    path('<int:property_id>/toggle-favorite/', toggle_favorite, name='toggle-favorite'),
+
+    # Заявки на контакт
+    path('<int:property_id>/contact/', create_contact_request, name='create-contact-request'),
+    path('my-contact-requests/', my_contact_requests, name='my-contact-requests'),
+    path('received-contact-requests/', received_contact_requests, name='received-contact-requests'),
+    path('contact-requests/<int:request_id>/', update_contact_request_status, name='update-contact-request'),
 
     # Удаление изображения
     path('<int:property_id>/images/<int:image_id>/', delete_image, name='delete-image'),

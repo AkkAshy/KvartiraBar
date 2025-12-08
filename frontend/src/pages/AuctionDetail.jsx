@@ -12,6 +12,9 @@ import {
   FireIcon,
   TrophyIcon,
   CreditCardIcon,
+  PhotoIcon,
+  CheckCircleIcon,
+  XCircleIcon,
 } from '@heroicons/react/24/outline';
 
 const AuctionDetail = () => {
@@ -24,6 +27,12 @@ const AuctionDetail = () => {
   const [submitting, setSubmitting] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState('');
   const [isExpired, setIsExpired] = useState(false);
+
+  // Состояния для ручной оплаты
+  const [paymentInfo, setPaymentInfo] = useState(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [screenshot, setScreenshot] = useState(null);
+  const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
 
   useEffect(() => {
     fetchAuction();
@@ -111,27 +120,68 @@ const AuctionDetail = () => {
     }
   };
 
-  const handleInitiatePayment = async () => {
+  // Получить информацию для оплаты (номер карты)
+  const handleGetPaymentInfo = async () => {
     try {
-      const response = await auctionsAPI.initiatePayment(id);
-      toast.success('Платеж инициирован. Используйте merchant_trans_id для оплаты через Click');
-      console.log('Payment info:', response.data);
-      await fetchAuction();
+      setPaymentLoading(true);
+      const response = await auctionsAPI.getPaymentInfo(id);
+      setPaymentInfo(response.data);
+      toast.success('Информация для оплаты получена');
     } catch (error) {
-      console.error('Error initiating payment:', error);
-      const errorMessage = error.response?.data?.error || 'Ошибка при инициализации платежа';
+      console.error('Error getting payment info:', error);
+      const errorMessage = error.response?.data?.error || 'Ошибка при получении информации об оплате';
       toast.error(errorMessage);
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
-  const handlePayWithClick = (merchantTransId) => {
-    // Для Click можно создать deeplink или показать инструкцию
-    // Вариант 1: Копировать в буфер обмена
-    navigator.clipboard.writeText(merchantTransId);
-    toast.success('Номер транзакции скопирован! Откройте приложение Click для оплаты');
+  // Копировать номер карты
+  const handleCopyCardNumber = () => {
+    if (paymentInfo?.card_number_raw) {
+      navigator.clipboard.writeText(paymentInfo.card_number_raw);
+      toast.success('Номер карты скопирован!');
+    }
+  };
 
-    // Вариант 2: Если у Click есть deeplink (нужно уточнить у Click)
-    // window.open(`click://payment?merchant_trans_id=${merchantTransId}`, '_blank');
+  // Выбрать файл скриншота
+  const handleScreenshotChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Размер файла не должен превышать 5 МБ');
+        return;
+      }
+      setScreenshot(file);
+    }
+  };
+
+  // Загрузить скриншот оплаты
+  const handleUploadScreenshot = async () => {
+    if (!screenshot) {
+      toast.error('Выберите скриншот оплаты');
+      return;
+    }
+
+    try {
+      setUploadingScreenshot(true);
+      const formData = new FormData();
+      formData.append('screenshot', screenshot);
+
+      await auctionsAPI.uploadScreenshot(id, formData);
+      toast.success('Скриншот отправлен на проверку! Ожидайте подтверждения в Telegram.');
+      setScreenshot(null);
+      await fetchAuction();
+      // Обновляем информацию о платеже
+      const response = await auctionsAPI.getPaymentInfo(id);
+      setPaymentInfo(response.data);
+    } catch (error) {
+      console.error('Error uploading screenshot:', error);
+      const errorMessage = error.response?.data?.error || 'Ошибка при загрузке скриншота';
+      toast.error(errorMessage);
+    } finally {
+      setUploadingScreenshot(false);
+    }
   };
 
   const getStatusBadge = () => {
@@ -305,60 +355,126 @@ const AuctionDetail = () => {
                 </div>
               )}
 
-              {/* Кнопка оплаты для организатора */}
+              {/* Блок оплаты для организатора */}
               {isOrganizer && auction.status === 'pending_payment' && !auction.is_paid && (
                 <div className="mt-6 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg">
-                  {!auction.payment_info?.merchant_trans_id ? (
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-yellow-800">
-                        <CreditCardIcon className="w-6 h-6 mr-3" />
-                        <div>
-                          <p className="text-sm font-medium">Требуется оплата</p>
-                          <p className="text-lg font-bold">50,000 сум</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={handleInitiatePayment}
-                        className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
-                      >
-                        Инициировать оплату
-                      </button>
-                    </div>
-                  ) : (
+                  <div className="flex items-center text-yellow-800 mb-4">
+                    <CreditCardIcon className="w-6 h-6 mr-3" />
                     <div>
-                      <div className="flex items-center text-yellow-800 mb-4">
-                        <CreditCardIcon className="w-6 h-6 mr-3" />
-                        <div>
-                          <p className="text-sm font-medium">Требуется оплата</p>
-                          <p className="text-lg font-bold">50,000 сум</p>
-                        </div>
-                      </div>
+                      <p className="text-sm font-medium">Требуется оплата за размещение аукциона</p>
+                      <p className="text-lg font-bold">50,000 сум</p>
+                    </div>
+                  </div>
 
-                      <div className="bg-white rounded-lg p-4 border border-yellow-300">
-                        <p className="text-sm text-gray-700 mb-2">Номер транзакции:</p>
-                        <div className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded mb-3">
-                          <p className="font-mono text-sm font-bold text-gray-900">
-                            {auction.payment_info.merchant_trans_id}
+                  {!paymentInfo ? (
+                    // Кнопка "Получить реквизиты"
+                    <button
+                      onClick={handleGetPaymentInfo}
+                      disabled={paymentLoading}
+                      className="w-full px-4 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors disabled:bg-gray-400 font-semibold"
+                    >
+                      {paymentLoading ? 'Загрузка...' : 'Получить реквизиты для оплаты'}
+                    </button>
+                  ) : (
+                    // Форма оплаты
+                    <div className="bg-white rounded-lg p-4 border border-yellow-300">
+                      {/* Статус платежа */}
+                      {paymentInfo.payment_status === 'waiting_confirmation' && (
+                        <div className="flex items-center bg-yellow-100 text-yellow-800 px-3 py-2 rounded mb-4">
+                          <ClockIcon className="w-5 h-5 mr-2" />
+                          <span className="text-sm font-medium">Скриншот отправлен. Ожидает проверки администратором.</span>
+                        </div>
+                      )}
+                      {paymentInfo.payment_status === 'confirmed' && (
+                        <div className="flex items-center bg-green-100 text-green-800 px-3 py-2 rounded mb-4">
+                          <CheckCircleIcon className="w-5 h-5 mr-2" />
+                          <span className="text-sm font-medium">Оплата подтверждена!</span>
+                        </div>
+                      )}
+                      {paymentInfo.payment_status === 'rejected' && (
+                        <div className="flex items-center bg-red-100 text-red-800 px-3 py-2 rounded mb-4">
+                          <XCircleIcon className="w-5 h-5 mr-2" />
+                          <span className="text-sm font-medium">Оплата отклонена. Попробуйте снова.</span>
+                        </div>
+                      )}
+
+                      {/* Номер карты */}
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-700 mb-2 font-semibold">Номер карты для перевода:</p>
+                        <div className="flex items-center justify-between bg-gray-100 px-4 py-3 rounded-lg">
+                          <p className="font-mono text-lg font-bold text-gray-900 tracking-wider">
+                            {paymentInfo.card_number}
                           </p>
                           <button
-                            onClick={() => handlePayWithClick(auction.payment_info.merchant_trans_id)}
-                            className="text-xs px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                            onClick={handleCopyCardNumber}
+                            className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
                           >
                             Копировать
                           </button>
                         </div>
-
-                        <div className="border-t border-gray-200 pt-3">
-                          <p className="text-xs text-gray-600 mb-2 font-semibold">Как оплатить:</p>
-                          <ol className="text-xs text-gray-600 space-y-1 list-decimal list-inside">
-                            <li>Откройте приложение <strong>Click</strong> на телефоне</li>
-                            <li>Выберите раздел <strong>"Платежи"</strong> или <strong>"Оплата услуг"</strong></li>
-                            <li>Найдите ваш сервис в списке или введите номер транзакции</li>
-                            <li>Введите скопированный номер транзакции</li>
-                            <li>Подтвердите оплату 50,000 сум</li>
-                          </ol>
-                        </div>
                       </div>
+
+                      {/* Сумма */}
+                      <div className="mb-4 p-3 bg-green-50 rounded-lg">
+                        <p className="text-sm text-green-700">Сумма к оплате:</p>
+                        <p className="text-2xl font-bold text-green-800">
+                          {Number(paymentInfo.amount).toLocaleString('ru-RU')} сум
+                        </p>
+                      </div>
+
+                      {/* Инструкции */}
+                      <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                        <p className="text-sm text-blue-800 font-semibold mb-2">Как оплатить:</p>
+                        <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+                          <li>Скопируйте номер карты выше</li>
+                          <li>Откройте приложение банка (Click, Payme, Uzum)</li>
+                          <li>Переведите <strong>50,000 сум</strong> на указанную карту</li>
+                          <li>Сделайте скриншот подтверждения перевода</li>
+                          <li>Загрузите скриншот ниже</li>
+                        </ol>
+                      </div>
+
+                      {/* Загрузка скриншота - показываем если статус pending (ожидает скриншот) или rejected (отклонено), скрываем если waiting_confirmation или confirmed */}
+                      {paymentInfo.payment_status !== 'waiting_confirmation' && paymentInfo.payment_status !== 'confirmed' && (
+                        <div className="border-t border-gray-200 pt-4">
+                          <p className="text-sm text-gray-700 mb-2 font-semibold">
+                            <PhotoIcon className="w-5 h-5 inline mr-1" />
+                            Загрузите скриншот оплаты:
+                          </p>
+
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleScreenshotChange}
+                            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100 mb-3"
+                          />
+
+                          {screenshot && (
+                            <div className="mb-3">
+                              <p className="text-sm text-green-600 mb-2">
+                                ✓ Выбран файл: {screenshot.name}
+                              </p>
+                              <img
+                                src={URL.createObjectURL(screenshot)}
+                                alt="Preview"
+                                className="max-h-40 rounded-lg border"
+                              />
+                            </div>
+                          )}
+
+                          <button
+                            onClick={handleUploadScreenshot}
+                            disabled={!screenshot || uploadingScreenshot}
+                            className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold"
+                          >
+                            {uploadingScreenshot ? 'Отправка...' : 'Отправить скриншот на проверку'}
+                          </button>
+
+                          <p className="text-xs text-gray-500 mt-2 text-center">
+                            После отправки администратор проверит оплату в Telegram
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

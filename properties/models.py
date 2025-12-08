@@ -73,14 +73,14 @@ class Property(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='Статус')
 
     price_per_day = models.DecimalField(
-    max_digits=10,
-    decimal_places=2,
-    null=True,
-    blank=True,
-    verbose_name='Цена за сутки'
+        max_digits=15,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name='Цена за сутки'
     )
     price_per_month = models.DecimalField(
-        max_digits=10,
+        max_digits=15,
         decimal_places=2,
         null=True,
         blank=True,

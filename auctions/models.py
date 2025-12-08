@@ -1,4 +1,3 @@
-
 from decimal import Decimal
 from django.db import models
 from users.models import User
@@ -185,4 +184,94 @@ class AuctionPayment(models.Model):
         """Отмечает платеж как неудавшийся"""
         self.status = 'failed'
         self.error_note = error_note
+        self.save()
+
+
+class ManualPayment(models.Model):
+    """Модель для ручной оплаты с загрузкой скриншота"""
+
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Ожидает загрузки скриншота'),
+        ('waiting_confirmation', 'Ожидает подтверждения'),
+        ('confirmed', 'Подтверждено'),
+        ('rejected', 'Отклонено'),
+    ]
+
+    auction = models.OneToOneField(
+        Auction,
+        on_delete=models.CASCADE,
+        related_name='manual_payment',
+        verbose_name='Аукцион'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='manual_payments',
+        verbose_name='Пользователь'
+    )
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('50000.00'),
+        verbose_name='Сумма оплаты'
+    )
+
+    # Скриншот оплаты
+    screenshot = models.ImageField(
+        upload_to='payment_screenshots/',
+        null=True,
+        blank=True,
+        verbose_name='Скриншот оплаты'
+    )
+
+    status = models.CharField(
+        max_length=25,
+        choices=PAYMENT_STATUS_CHOICES,
+        default='pending',
+        verbose_name='Статус'
+    )
+
+    # Telegram message id для редактирования сообщения
+    telegram_message_id = models.BigIntegerField(
+        null=True,
+        blank=True,
+        verbose_name='ID сообщения в Telegram'
+    )
+
+    rejection_reason = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name='Причина отклонения'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
+    confirmed_at = models.DateTimeField(null=True, blank=True, verbose_name='Дата подтверждения')
+
+    class Meta:
+        verbose_name = 'Ручной платеж'
+        verbose_name_plural = 'Ручные платежи'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Оплата аукциона #{self.auction.id} - {self.get_status_display()}"
+
+    def confirm(self):
+        """Подтверждает платеж и активирует аукцион"""
+        from django.utils import timezone
+
+        self.status = 'confirmed'
+        self.confirmed_at = timezone.now()
+        self.save()
+
+        # Активируем аукцион
+        self.auction.is_paid = True
+        if self.auction.status == 'pending_payment':
+            self.auction.status = 'scheduled'
+        self.auction.save()
+
+    def reject(self, reason=''):
+        """Отклоняет платеж"""
+        self.status = 'rejected'
+        self.rejection_reason = reason
         self.save()

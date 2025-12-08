@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from .models import Auction, Bid, AuctionPayment
-from properties.serializers import PropertySerializer
+from .models import Auction, Bid, AuctionPayment, ManualPayment
 
 
 class BidSerializer(serializers.ModelSerializer):
@@ -24,7 +23,6 @@ class AuctionPaymentSerializer(serializers.ModelSerializer):
 
 class AuctionSerializer(serializers.ModelSerializer):
     bids = BidSerializer(many=True, read_only=True)
-    property_data = PropertySerializer(source='property', read_only=True)
     property_title = serializers.CharField(source='property.title', read_only=True)
     organizer_name = serializers.CharField(source='organizer.full_name', read_only=True)
     winner_name = serializers.CharField(source='winner.full_name', read_only=True, allow_null=True)
@@ -34,7 +32,7 @@ class AuctionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Auction
         fields = [
-            'id', 'property', 'property_data', 'property_title', 'organizer', 'organizer_name',
+            'id', 'property', 'property_title', 'organizer', 'organizer_name',
             'start_price', 'current_price', 'start_time', 'end_time',
             'end_type', 'target_price', 'status', 'is_paid',
             'winner', 'winner_name', 'winning_bid', 'bids',
@@ -102,3 +100,40 @@ class AuctionSerializer(serializers.ModelSerializer):
         validated_data['status'] = 'pending_payment'
         validated_data['current_price'] = validated_data['start_price']
         return super().create(validated_data)
+
+
+class ManualPaymentSerializer(serializers.ModelSerializer):
+    """Сериализатор для ручных платежей"""
+    auction_title = serializers.CharField(source='auction.property.title', read_only=True)
+    user_name = serializers.CharField(source='user.full_name', read_only=True)
+    screenshot_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ManualPayment
+        fields = [
+            'id', 'auction', 'auction_title', 'user', 'user_name',
+            'amount', 'screenshot', 'screenshot_url', 'status',
+            'rejection_reason', 'created_at', 'confirmed_at'
+        ]
+        read_only_fields = [
+            'id', 'auction', 'user', 'status',
+            'rejection_reason', 'created_at', 'confirmed_at'
+        ]
+
+    def get_screenshot_url(self, obj):
+        if obj.screenshot:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.screenshot.url)
+            return obj.screenshot.url
+        return None
+
+
+class PaymentInfoSerializer(serializers.Serializer):
+    """Сериализатор для информации об оплате"""
+    card_number = serializers.CharField()
+    card_number_raw = serializers.CharField()
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    instructions = serializers.CharField()
+    payment_id = serializers.IntegerField(required=False)
+    payment_status = serializers.CharField(required=False)

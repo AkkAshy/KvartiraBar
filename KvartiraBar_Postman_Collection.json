@@ -1,0 +1,871 @@
+{
+	"info": {
+		"_postman_id": "kvartirabar-api-collection",
+		"name": "KvartiraBar API",
+		"description": "Полная коллекция API endpoints для платформы KvartiraBar",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "production_url",
+			"value": "https://kvartirabar.uz",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "🔐 Authentication",
+			"item": [
+				{
+					"name": "Register (Seller)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('access_token', jsonData.access);",
+									"    pm.collectionVariables.set('refresh_token', jsonData.refresh);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"seller_test\",\n    \"password\": \"TestPass123!\",\n    \"password2\": \"TestPass123!\",\n    \"email\": \"seller@test.com\",\n    \"full_name\": \"Иван Продавец\",\n    \"phone\": \"+998901234567\",\n    \"user_type\": \"seller\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/register/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "register", ""]
+						}
+					}
+				},
+				{
+					"name": "Register (Buyer)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('access_token', jsonData.access);",
+									"    pm.collectionVariables.set('refresh_token', jsonData.refresh);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"buyer_test\",\n    \"password\": \"TestPass123!\",\n    \"password2\": \"TestPass123!\",\n    \"email\": \"buyer@test.com\",\n    \"full_name\": \"Мария Покупатель\",\n    \"phone\": \"+998907654321\",\n    \"user_type\": \"buyer\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/register/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "register", ""]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('access_token', jsonData.access);",
+									"    pm.collectionVariables.set('refresh_token', jsonData.refresh);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"seller_test\",\n    \"password\": \"TestPass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/login/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "login", ""]
+						}
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('access_token', jsonData.access);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/token/refresh/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "token", "refresh", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Current User Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/profile/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "profile", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🏠 Properties",
+			"item": [
+				{
+					"name": "Get All Properties",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/properties/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Properties (Filtered)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/properties/?type=rent&rooms=3&has_wifi=true",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", ""],
+							"query": [
+								{
+									"key": "type",
+									"value": "rent",
+									"description": "sale | rent | daily_rent"
+								},
+								{
+									"key": "rooms",
+									"value": "3"
+								},
+								{
+									"key": "has_wifi",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Search Properties by Location",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/properties/?search=НГПИ&max_distance=5",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", ""],
+							"query": [
+								{
+									"key": "search",
+									"value": "НГПИ",
+									"description": "Ориентир для поиска"
+								},
+								{
+									"key": "max_distance",
+									"value": "5",
+									"description": "Радиус в км"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Property by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/properties/1/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "1", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Property (Sale)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"3-комнатная квартира в центре\",\n    \"description\": \"Продается отличная квартира с евроремонтом\",\n    \"type\": \"sale\",\n    \"price\": 35000000,\n    \"address\": \"Нукус, улица Достлик 12\",\n    \"area\": 85.5,\n    \"rooms\": 3,\n    \"floor\": 5,\n    \"total_floors\": 9,\n    \"building_type\": \"apartment\",\n    \"repair_type\": \"euro\",\n    \"has_furniture\": true,\n    \"has_wifi\": true,\n    \"has_parking\": true,\n    \"building_year\": 2018\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/properties/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Property (Long-term Rent)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"2-комнатная квартира для студентов\",\n    \"description\": \"Сдается чистая квартира рядом с университетом\",\n    \"type\": \"rent\",\n    \"price_per_month\": 2500000,\n    \"min_rental_days\": 6,\n    \"address\": \"Нукус, проспект Амира Темура 45\",\n    \"area\": 65,\n    \"rooms\": 2,\n    \"floor\": 3,\n    \"total_floors\": 5,\n    \"building_type\": \"apartment\",\n    \"repair_type\": \"cosmetic\",\n    \"has_furniture\": true,\n    \"has_wifi\": true,\n    \"gender_preference\": [\"male\", \"female\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/properties/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Property (Daily Rent)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Однокомнатная квартира посуточно\",\n    \"description\": \"Уютная квартира для краткосрочной аренды\",\n    \"type\": \"daily_rent\",\n    \"price_per_day\": 150000,\n    \"min_rental_days\": 1,\n    \"address\": \"Нукус, улица Каракалпакстан 23\",\n    \"area\": 45,\n    \"rooms\": 1,\n    \"floor\": 2,\n    \"total_floors\": 4,\n    \"building_type\": \"apartment\",\n    \"repair_type\": \"euro\",\n    \"has_furniture\": true,\n    \"has_wifi\": true,\n    \"has_washing_machine\": true,\n    \"has_fridge\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/properties/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", ""]
+						}
+					}
+				},
+				{
+					"name": "Update Property",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Обновленное название\",\n    \"description\": \"Обновленное описание\",\n    \"price_per_month\": 3000000\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/properties/1/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "1", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Property",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/properties/1/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "1", ""]
+						}
+					}
+				},
+				{
+					"name": "Upload Property Images",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "images[]",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "images[]",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/properties/1/upload-images/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "1", "upload-images", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Property Image",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/properties/1/images/1/delete/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "1", "images", "1", "delete", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "⭐ Favorites",
+			"item": [
+				{
+					"name": "Get My Favorites",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/properties/favorites/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "favorites", ""]
+						}
+					}
+				},
+				{
+					"name": "Add to Favorites",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"property\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/properties/favorites/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "favorites", ""]
+						}
+					}
+				},
+				{
+					"name": "Remove from Favorites",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/properties/favorites/1/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "favorites", "1", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "💬 Contact Requests",
+			"item": [
+				{
+					"name": "Get My Contact Requests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/properties/contact-requests/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "contact-requests", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Contact Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"property\": 1,\n    \"message\": \"Здравствуйте! Интересует эта квартира. Можно посмотреть в эту субботу?\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/properties/contact-requests/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "contact-requests", ""]
+						}
+					}
+				},
+				{
+					"name": "Update Contact Request Status",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"approved\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/properties/contact-requests/1/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "contact-requests", "1", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🎯 Auctions",
+			"item": [
+				{
+					"name": "Get All Auctions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auctions/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auctions", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Auction by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auctions/1/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auctions", "1", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Auction (Target Price)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"property\": 1,\n    \"start_price\": 30000000,\n    \"end_type\": \"target_price\",\n    \"target_price\": 35000000,\n    \"start_time\": \"2025-01-25T10:00:00Z\",\n    \"end_time\": \"2025-02-01T10:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auctions/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auctions", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Auction (Fixed Time)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"property\": 1,\n    \"start_price\": 30000000,\n    \"end_type\": \"fixed_time\",\n    \"start_time\": \"2025-01-25T10:00:00Z\",\n    \"end_time\": \"2025-02-01T18:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auctions/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auctions", ""]
+						}
+					}
+				},
+				{
+					"name": "Place Bid",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"auction\": 1,\n    \"amount\": 31000000\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auctions/bids/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auctions", "bids", ""]
+						}
+					}
+				},
+				{
+					"name": "Get My Bids",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auctions/bids/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auctions", "bids", ""]
+						}
+					}
+				},
+				{
+					"name": "Initiate Auction Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"auction\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auctions/payments/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auctions", "payments", ""]
+						}
+					}
+				},
+				{
+					"name": "Click Prepare (Callback)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"click_trans_id\": 123456789,\n    \"service_id\": 12345,\n    \"click_paydoc_id\": 987654321,\n    \"merchant_trans_id\": \"AUCTION_00001\",\n    \"amount\": 50000,\n    \"action\": 0,\n    \"error\": 0,\n    \"error_note\": \"Success\",\n    \"sign_time\": \"2025-01-22 12:00:00\",\n    \"sign_string\": \"computed_md5_hash\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auctions/click/prepare/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auctions", "click", "prepare", ""]
+						}
+					}
+				},
+				{
+					"name": "Click Complete (Callback)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"click_trans_id\": 123456789,\n    \"service_id\": 12345,\n    \"click_paydoc_id\": 987654321,\n    \"merchant_trans_id\": \"AUCTION_00001\",\n    \"merchant_prepare_id\": 1,\n    \"amount\": 50000,\n    \"action\": 1,\n    \"error\": 0,\n    \"error_note\": \"Success\",\n    \"sign_time\": \"2025-01-22 12:05:00\",\n    \"sign_string\": \"computed_md5_hash\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auctions/click/complete/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auctions", "click", "complete", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🤖 AI Search",
+			"item": [
+				{
+					"name": "AI Search (Simple)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Найди квартиру рядом с НГПИ\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/properties/ai-search/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "ai-search", ""]
+						}
+					}
+				},
+				{
+					"name": "AI Search (Complex)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"2 комнатная квартира для студентки с WiFi и мебелью рядом с университетом до 2 миллионов\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/properties/ai-search/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "ai-search", ""]
+						}
+					}
+				},
+				{
+					"name": "AI Search (With Location)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"Покажи квартиры поблизости с WiFi\",\n    \"user_location\": {\n        \"lat\": 42.464,\n        \"lon\": 59.610\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/properties/ai-search/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "ai-search", ""]
+						}
+					}
+				},
+				{
+					"name": "AI Suggest (Autocomplete)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"partial_query\": \"2 комнатная рядом с\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/properties/ai-suggest/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", "ai-suggest", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📊 Statistics & Admin",
+			"item": [
+				{
+					"name": "Get My Properties",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/properties/?owner={{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "properties", ""],
+							"query": [
+								{
+									"key": "owner",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get My Auctions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auctions/?organizer={{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auctions", ""],
+							"query": [
+								{
+									"key": "organizer",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Active Auctions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auctions/?status=active",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auctions", ""],
+							"query": [
+								{
+									"key": "status",
+									"value": "active"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	]
+}
