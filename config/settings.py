@@ -37,6 +37,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "kvartirabar.uz",
     "www.kvartirabar.uz",
+    "server.kvartirabar.uz",
     "127.0.0.1",
     "localhost",
 ]
@@ -214,3 +215,44 @@ SIMPLE_JWT = {
 # Media files mapping:
 # URL: /media/
 # Path: /home/akkanat/kvartirabar_backend/media
+
+# ==================== REDIS CACHE ====================
+# Лимит 64MB для кэша (DB 1), Celery использует DB 0
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://localhost:6379/1',
+        'OPTIONS': {
+            'db': '1',
+        },
+        'KEY_PREFIX': 'kvbar',
+        'TIMEOUT': 300,  # 5 минут по умолчанию
+    }
+}
+
+# ==================== CELERY ====================
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+
+# Celery Beat - расписание периодических задач
+CELERY_BEAT_SCHEDULE = {
+    # Активация запланированных аукционов - каждые 30 секунд
+    'activate-scheduled-auctions': {
+        'task': 'auctions.tasks.activate_scheduled_auctions',
+        'schedule': 30.0,  # каждые 30 секунд
+    },
+    # Проверка и завершение аукционов - каждую минуту
+    'check-and-complete-auctions': {
+        'task': 'auctions.tasks.check_and_complete_auctions',
+        'schedule': 60.0,  # каждые 60 секунд
+    },
+    # Отмена неоплаченных аукционов - каждый час
+    'cancel-unpaid-auctions': {
+        'task': 'auctions.tasks.cancel_unpaid_auctions',
+        'schedule': 3600.0,  # каждый час
+    },
+}

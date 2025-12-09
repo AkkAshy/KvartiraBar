@@ -19,9 +19,34 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === 'phone') {
+      // Форматирование телефона: +998 XX XXX XX XX
+      let digits = value.replace(/\D/g, '');
+
+      // Убираем 998 в начале если есть, чтобы не дублировать
+      if (digits.startsWith('998')) {
+        digits = digits.slice(3);
+      }
+
+      // Ограничиваем 9 цифрами (без кода страны)
+      digits = digits.slice(0, 9);
+
+      // Форматируем
+      let formatted = '+998';
+      if (digits.length > 0) formatted += ' ' + digits.slice(0, 2);
+      if (digits.length > 2) formatted += ' ' + digits.slice(2, 5);
+      if (digits.length > 5) formatted += ' ' + digits.slice(5, 7);
+      if (digits.length > 7) formatted += ' ' + digits.slice(7, 9);
+
+      setFormData({ ...formData, phone: formatted });
+      return;
+    }
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
   };
 
@@ -130,7 +155,7 @@ const Register = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     className="input-field pl-10"
-                    placeholder="+998901234567"
+                    placeholder="+998 90 123 45 67"
                   />
                 </div>
               </div>

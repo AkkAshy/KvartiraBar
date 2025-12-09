@@ -1,0 +1,18 @@
+[Unit]
+Description=Celery Beat for KvartiraBar
+After=network.target redis.service
+
+[Service]
+Type=forking
+User=root
+Group=root
+WorkingDirectory=/root/kanat/kvbar/KvartiraBar
+ExecStart=/root/kanat/kvbar/KvartiraBar/venv/bin/celery -A config beat -l info --detach --pidfile=/var/run/celery/beat.pid --logfile=/var/log/celery/beat.log
+ExecStop=/bin/kill -TERM $MAINPID
+PIDFile=/var/run/celery/beat.pid
+Restart=always
+RuntimeDirectory=celery
+RuntimeDirectoryMode=755
+
+[Install]
+WantedBy=multi-user.target

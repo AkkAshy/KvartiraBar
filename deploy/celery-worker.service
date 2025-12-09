@@ -1,0 +1,19 @@
+[Unit]
+Description=Celery Worker for KvartiraBar
+After=network.target redis.service
+
+[Service]
+Type=forking
+User=root
+Group=root
+WorkingDirectory=/root/kanat/kvbar/KvartiraBar
+ExecStart=/root/kanat/kvbar/KvartiraBar/venv/bin/celery -A config worker -l info --detach --pidfile=/var/run/celery/worker.pid --logfile=/var/log/celery/worker.log
+ExecStop=/bin/kill -TERM $MAINPID
+ExecReload=/bin/kill -HUP $MAINPID
+PIDFile=/var/run/celery/worker.pid
+Restart=always
+RuntimeDirectory=celery
+RuntimeDirectoryMode=755
+
+[Install]
+WantedBy=multi-user.target

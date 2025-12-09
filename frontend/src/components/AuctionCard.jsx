@@ -78,9 +78,9 @@ const AuctionCard = ({ auction }) => {
       <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden">
         {/* Изображение */}
         <div className="relative h-48 bg-gray-200">
-          {auction.property_data?.images?.[0] ? (
+          {auction.property_details?.images?.[0] ? (
             <img
-              src={auction.property_data.images[0].image}
+              src={auction.property_details.images[0].image}
               alt={auction.property_title}
               className="w-full h-full object-cover"
             />

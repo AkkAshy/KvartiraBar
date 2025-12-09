@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Auction, Bid, AuctionPayment, ManualPayment
+from properties.serializers import PropertySerializer
 
 
 class BidSerializer(serializers.ModelSerializer):
@@ -23,6 +24,7 @@ class AuctionPaymentSerializer(serializers.ModelSerializer):
 
 class AuctionSerializer(serializers.ModelSerializer):
     bids = BidSerializer(many=True, read_only=True)
+    property_details = PropertySerializer(source='property', read_only=True)
     property_title = serializers.CharField(source='property.title', read_only=True)
     organizer_name = serializers.CharField(source='organizer.full_name', read_only=True)
     winner_name = serializers.CharField(source='winner.full_name', read_only=True, allow_null=True)
@@ -32,7 +34,7 @@ class AuctionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Auction
         fields = [
-            'id', 'property', 'property_title', 'organizer', 'organizer_name',
+            'id', 'property', 'property_details', 'property_title', 'organizer', 'organizer_name',
             'start_price', 'current_price', 'start_time', 'end_time',
             'end_type', 'target_price', 'status', 'is_paid',
             'winner', 'winner_name', 'winning_bid', 'bids',

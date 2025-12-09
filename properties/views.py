@@ -10,6 +10,9 @@ from rest_framework import filters
 from django.db import transaction
 from django.db.models import Q, F
 from django.shortcuts import get_object_or_404
+from django.core.cache import cache
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 from .models import Property, PropertyImage, Favorite, ContactRequest
 from .serializers import PropertySerializer, FavoriteSerializer, ContactRequestSerializer
@@ -30,6 +33,14 @@ class PropertyListCreateView(generics.ListCreateAPIView):
     serializer_class = PropertySerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     parser_classes = (MultiPartParser, FormParser, JSONParser)
+
+    # Кэшируем GET на 2 минуты (только список без фильтров)
+    @method_decorator(cache_page(60 * 2, key_prefix='properties_list'))
+    def list(self, request, *args, **kwargs):
+        # Если есть поисковые параметры - не кэшируем
+        if request.query_params:
+            return super().list(request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
@@ -276,6 +287,10 @@ class PropertyListCreateView(generics.ListCreateAPIView):
 
         print(f"📊 Результат: сохранено {saved_images} из {len(images)} изображений")
         print("="*50 + "\n")
+
+        # Инвалидируем кэш списка объявлений
+        from django.core.cache import cache
+        cache.delete_many(cache.keys('*properties_list*'))
 
         # Возвращаем созданный объект с изображениями
         output_serializer = self.get_serializer(property_obj)

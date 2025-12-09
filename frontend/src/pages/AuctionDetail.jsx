@@ -251,9 +251,9 @@ const AuctionDetail = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Изображения недвижимости */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              {auction.property_data?.images?.[0] ? (
+              {auction.property_details?.images?.[0] ? (
                 <img
-                  src={auction.property_data.images[0].image}
+                  src={auction.property_details.images[0].image}
                   alt={auction.property_title}
                   className="w-full h-96 object-cover"
                 />
@@ -549,11 +549,13 @@ const AuctionDetail = () => {
                       Ваша ставка (сум)
                     </label>
                     <input
-                      type="number"
-                      value={bidAmount}
-                      onChange={(e) => setBidAmount(e.target.value)}
-                      min={Number(auction.current_price) + 1}
-                      step="1000000"
+                      type="text"
+                      inputMode="numeric"
+                      value={bidAmount ? Number(bidAmount).toLocaleString('ru-RU') : ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^\d]/g, '');
+                        setBidAmount(value);
+                      }}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       required
                     />
