@@ -16,7 +16,8 @@ const Favorites = () => {
   const fetchFavorites = async () => {
     try {
       const response = await propertiesAPI.getFavorites();
-      setFavorites(response.data);
+      // Backend возвращает { count, results }, берём results
+      setFavorites(response.data.results || response.data || []);
     } catch (error) {
       console.error('Error fetching favorites:', error);
     } finally {

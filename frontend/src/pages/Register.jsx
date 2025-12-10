@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { FiHome, FiUser, FiMail, FiLock, FiPhone, FiEye, FiEyeOff, FiBriefcase, FiShoppingCart, FiTrendingUp } from 'react-icons/fi';
+import { FiHome, FiUser, FiMail, FiLock, FiPhone, FiEye, FiEyeOff } from 'react-icons/fi';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -11,7 +11,6 @@ const Register = () => {
     full_name: '',
     email: '',
     phone: '',
-    role: 'buyer',
     password: '',
     password_confirm: '',
   });
@@ -157,50 +156,6 @@ const Register = () => {
                     className="input-field pl-10"
                     placeholder="+998 90 123 45 67"
                   />
-                </div>
-              </div>
-
-              {/* Role */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Роль *
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, role: 'buyer' })}
-                    className={`p-4 border-2 rounded-lg transition-all ${
-                      formData.role === 'buyer'
-                        ? 'border-primary-600 bg-primary-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className="text-2xl mb-2"><FiShoppingCart /></div>
-                      <div className="font-semibold">Покупатель</div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        Ищу недвижимость
-                      </div>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, role: 'seller' })}
-                    className={`p-4 border-2 rounded-lg transition-all ${
-                      formData.role === 'seller'
-                        ? 'border-primary-600 bg-primary-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className="text-2xl mb-2"><FiTrendingUp /></div>
-                      <div className="font-semibold">Продавец</div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        Продаю недвижимость
-                      </div>
-                    </div>
-                  </button>
                 </div>
               </div>
 

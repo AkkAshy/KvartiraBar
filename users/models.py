@@ -3,15 +3,9 @@ from django.db import models
 
 
 class User(AbstractUser):
-    # УПРОЩЕННЫЕ РОЛИ - только 2
-    ROLE_CHOICES = [
-        ('seller', 'Продавец/Владелец'),  # Может создавать, редактировать, удалять объявления
-        ('buyer', 'Покупатель'),           # Может только просматривать и связываться с владельцами
-    ]
-
     full_name = models.CharField(max_length=255, verbose_name='Полное имя')
     email = models.EmailField(unique=True, verbose_name='Email')
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='buyer', verbose_name='Роль')
+    # Роль убрана - все пользователи могут и продавать и покупать
     phone = models.CharField(max_length=20, blank=True, verbose_name='Телефон')
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name='Аватар')
     is_verified = models.BooleanField(default=False, verbose_name='Верифицирован')
