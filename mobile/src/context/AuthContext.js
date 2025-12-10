@@ -27,8 +27,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (phone, password) => {
-    const response = await authAPI.login(phone, password);
+  const login = async (loginValue, password) => {
+    const response = await authAPI.login(loginValue, password);
     await SecureStore.setItemAsync('accessToken', response.data.access);
     await SecureStore.setItemAsync('refreshToken', response.data.refresh);
 

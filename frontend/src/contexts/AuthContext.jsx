@@ -36,9 +36,9 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   };
 
-  const login = async (username, password) => {
+  const login = async (loginValue, password) => {
     try {
-      const response = await authAPI.login({ username, password });
+      const response = await authAPI.login({ login: loginValue, password });
       const { access, refresh } = response.data;
 
       localStorage.setItem('access_token', access);
@@ -96,17 +96,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const isSeller = () => user?.role === 'seller';
-  const isBuyer = () => user?.role === 'buyer';
-
   const value = {
     user,
     loading,
     login,
     register,
     logout,
-    isSeller,
-    isBuyer,
     isAuthenticated: !!user,
   };
 

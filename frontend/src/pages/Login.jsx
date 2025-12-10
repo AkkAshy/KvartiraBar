@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { FiHome, FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiHome, FiPhone, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
-    username: '',
+    login: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +24,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
 
-    const result = await login(formData.username, formData.password);
+    const result = await login(formData.login, formData.password);
     
     setLoading(false);
 
@@ -50,21 +50,21 @@ const Login = () => {
         {/* Form Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username */}
+            {/* Phone or Username */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Имя пользователя
+                Телефон или имя пользователя
               </label>
               <div className="relative">
-                <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FiPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  name="username"
-                  value={formData.username}
+                  name="login"
+                  value={formData.login}
                   onChange={handleChange}
                   required
                   className="input-field pl-10"
-                  placeholder="Введите имя пользователя"
+                  placeholder="+998 90 123 45 67 или username"
                 />
               </div>
             </div>

@@ -1,6 +1,47 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
+from django.db.models import Q
 from .models import User
+
+
+class PhoneOrUsernameTokenSerializer(TokenObtainPairSerializer):
+    """
+    Вход по телефону или username
+    """
+    username_field = 'login'  # Переименовываем поле
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Меняем поле username на login
+        self.fields['login'] = self.fields.pop('username', serializers.CharField())
+
+    def validate(self, attrs):
+        login = attrs.get('login', '').strip()
+        password = attrs.get('password', '')
+
+        # Ищем пользователя по телефону или username
+        user = User.objects.filter(
+            Q(phone=login) | Q(username=login)
+        ).first()
+
+        if user is None:
+            raise serializers.ValidationError('Пользователь не найден')
+
+        if not user.check_password(password):
+            raise serializers.ValidationError('Неверный пароль')
+
+        if not user.is_active:
+            raise serializers.ValidationError('Аккаунт деактивирован')
+
+        # Генерируем токены
+        refresh = self.get_token(user)
+        data = {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }
+
+        return data
 
 
 class UserSerializer(serializers.ModelSerializer):
