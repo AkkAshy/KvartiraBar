@@ -96,6 +96,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const isSeller = () => {
+    return user?.user_type === 'seller' || user?.is_seller === true;
+  };
+
+  const isBuyer = () => {
+    return user?.user_type === 'buyer' || user?.is_buyer === true;
+  };
+
   const value = {
     user,
     loading,
@@ -103,6 +111,8 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     isAuthenticated: !!user,
+    isSeller,
+    isBuyer,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
